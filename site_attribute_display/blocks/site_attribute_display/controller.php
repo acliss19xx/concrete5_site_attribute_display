@@ -71,7 +71,7 @@ class Controller extends BlockController
                         $content = (string) $image->getTag();
                     }
                 } else if (is_object($content_alt)) {
-                    $content = $content_alt->getDisplayValue();
+                    $content =nl2br($content_alt->getDisplayValue());
                 }
                 break;
         }
