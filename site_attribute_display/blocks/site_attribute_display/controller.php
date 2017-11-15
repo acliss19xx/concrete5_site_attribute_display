@@ -70,11 +70,12 @@ class Controller extends BlockController
                         $image = Core::make('html/image', array($content));
                         $content = (string) $image->getTag();
                     }
-                } else if (is_object($content_alt)) {
-                    if($content_alt->getDisplayValue() === strip_tags($content_alt->getDisplayValue())){
-                        $content =nl2br($content_alt->getDisplayValue());
+                } else {
+                    $type = $content_alt->getAttributeKey()->getAttributeKeySettings()->getMode();
+                    if($type == "text"){
+                        $content = nl2br($content_alt->getDisplayValue());
                     }else{
-                        $content =$content_alt->getDisplayValue();
+                        $content = $content_alt->getDisplayValue();
                     }
                 }
                 break;
