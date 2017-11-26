@@ -56,29 +56,42 @@ class Controller extends BlockController
                 break;
             default:
                 $content = $s->getAttribute($this->attributeHandle);
-                $content_alt = $s->getAttributeValue($this->attributeHandle);
-                if (is_object($content) && $content instanceof \Concrete\Core\Entity\File\File) {
-                    if ($this->thumbnailWidth > 0 || $this->thumbnailHeight > 0) {
-                        $im = Core::make('helper/image');
-                        $thumb = $im->getThumbnail(
-                            $content,
-                            $this->thumbnailWidth,
-                            $this->thumbnailHeight
-                        ); //<-- set these 2 numbers to max width and height of thumbnails
-                        $content = "<img src=\"{$thumb->src}\" width=\"{$thumb->width}\" height=\"{$thumb->height}\" alt=\"\" />";
-                    } else {
-                        $image = Core::make('html/image', array($content));
-                        $content = (string) $image->getTag();
-                    }
+                if ($content instanceof \DateTime) {
+                    $content = $content->format(Date::DB_FORMAT);
                 } else {
-                    $type = $content_alt->getAttributeKey()->getAttributeKeySettings()->getMode();
-                    if($type == "text"){
-                        $content = nl2br($content_alt->getDisplayValue());
-                    }else{
-                        $content = $content_alt->getDisplayValue();
+                    $content_alt = $s->getAttributeValue($this->attributeHandle);
+                    if (is_object($content) && $content instanceof \Concrete\Core\Entity\File\File) {
+                        if ($this->thumbnailWidth > 0 || $this->thumbnailHeight > 0) {
+                            $im = Core::make('helper/image');
+                            $thumb = $im->getThumbnail(
+                                $content,
+                                $this->thumbnailWidth,
+                                $this->thumbnailHeight
+                            ); //<-- set these 2 numbers to max width and height of thumbnails
+                            $content = "<img src=\"{$thumb->src}\" width=\"{$thumb->width}\" height=\"{$thumb->height}\" alt=\"\" />";
+                        } else {
+                            $image = Core::make('html/image', [$content]);
+                            $content = (string) $image->getTag();
+                        }
+                    } elseif (is_object($content_alt)) {
+                        if (is_array($content) && $content[0] instanceof \Concrete\Core\Tree\Node\Type\Topic) {
+                            $content = str_replace(', ', "\n", $content_alt->getDisplayValue());
+                        } elseif ($content instanceof SelectValue) {
+                            $content = (string) $content;
+                        } else{
+                            $atType = $s->getAttributeValue($this->attributeHandle)->getAttributeKey()->getAttributeKeySettings();
+                            if($atType instanceof \Concrete\Core\Entity\Attribute\Key\Settings\TextareaSettings){
+                                $type = $atType->getMode();
+                                if($type == "text"){
+                                    $content = nl2br($content_alt->getDisplayValue());
+                                }else{
+                                    $content = $content_alt->getDisplayValue();
+                                }
+                            }
+                        }
                     }
                 }
-                break;
+
         }
 /*
         $is_stack = $c->getController() instanceof \Concrete\Controller\SinglePage\Dashboard\Blocks\Stacks;
